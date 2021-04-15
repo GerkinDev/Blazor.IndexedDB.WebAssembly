@@ -170,6 +170,10 @@ namespace Blazor.IndexedDB.WebAssembly
                     var foreignKey = false;
 
                     // Check for settings via attributes here (additonal attributes have to be checked here)
+                    if (attributes.Any(x => x.AttributeType == typeof(NotMappedAttribute)))
+                    {
+                        continue;
+                    }
                     if (attributes.Any(x => x.AttributeType == typeof(KeyAttribute)))
                     {
                         id = true;
@@ -416,7 +420,7 @@ namespace Blazor.IndexedDB.WebAssembly
         // Usage dictionary instead of type for the possibility of ignoring properties, eg ForeignKeyAttribute properties
         private StoreRecord<object> ConvertToObjectRecord(string storeName, object data)
         {
-            var properties = data.GetType().GetProperties().Where(x => x.CustomAttributes.All(y => y.AttributeType != typeof(ForeignKeyAttribute)));
+            var properties = data.GetType().GetProperties().Where(x => x.CustomAttributes.All(y => y.AttributeType != typeof(ForeignKeyAttribute) && y.AttributeType != typeof(NotMappedAttribute)));
 
             var keyValueData = new Dictionary<string, object>();
 

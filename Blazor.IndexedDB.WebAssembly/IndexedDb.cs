@@ -120,6 +120,7 @@ namespace Blazor.IndexedDB.WebAssembly
             }
 
             Debug.WriteLine($"All changes saved");
+            await Reload();
         }
 
         /// <summary>

@@ -92,6 +92,7 @@ namespace Blazor.IndexedDB.WebAssembly
                             continue;
                         case EntityState.Added:
                             await this.AddRow(table.Name, row.Instance);
+                            row.State = EntityState.Unchanged;
                             break;
                         case EntityState.Deleted:
                             if (pkProperty == null)
@@ -100,9 +101,11 @@ namespace Blazor.IndexedDB.WebAssembly
                             }
 
                             await this.DeleteRow(table.Name, row.Instance, pkProperty);
+                            row.State = EntityState.Detached;
                             break;
                         case EntityState.Modified:
                             await this.ChangeRow(table.Name, row.Instance);
+                            row.State = EntityState.Unchanged;
                             break;
                         default:
                             throw new NotSupportedException();

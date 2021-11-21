@@ -383,12 +383,31 @@ namespace Blazor.IndexedDB.WebAssembly
                 {
                     throw new InvalidOperationException("No notification was retrieved from insertion");
                 }
-                // Extract new item ID from message. Format of message is from
-                // https://github.com/wtulloch/Blazor.IndexedDB/blob/master/TG.Blazor.IndexedDb/IndexedDB/IndexedDBManager.cs#L127 =>
-                // https://github.com/wtulloch/Blazor.IndexedDB/blob/master/TG.Blazor.IndexedDb/client/indexedDbBlazor.ts#L78
-                var id = Convert.ChangeType(int.Parse(new Regex("\\d+$").Match(notification.Message).Value), pkProperty.PropertyType);
-                Debug.WriteLine($"{nameof(IndexedDb)} - {storeName} - Inserted item {id}");
-                pkProperty.SetValue(data, id, null);
+                switch(notification.Outcome)
+                {
+                    case IndexDBActionOutCome.Successful:
+                        {
+                            // Extract new item ID from message. Format of message is from
+                            // https://github.com/wtulloch/Blazor.IndexedDB/blob/master/TG.Blazor.IndexedDb/IndexedDB/IndexedDBManager.cs#L127 =>
+                            // https://github.com/wtulloch/Blazor.IndexedDB/blob/master/TG.Blazor.IndexedDb/client/indexedDbBlazor.ts#L78
+                            var notifMessage = notification.Message;
+                            var idStr = new Regex("\\d+$").Match(notifMessage).Value;
+                            var idInt = int.Parse(idStr);
+                            var id = Convert.ChangeType(idInt, pkProperty.PropertyType);
+                            Debug.WriteLine($"{nameof(IndexedDb)} - {storeName} - Inserted item {id}");
+                            pkProperty.SetValue(data, id, null);
+                        } break;
+
+                    case IndexDBActionOutCome.Failed:
+                        {
+                            throw new Exception(notification.Message);
+                        }
+
+                    default:
+                        {
+                            throw new InvalidOperationException($"Unsupporterd notification outcome {notification.Outcome}: {notification.Message}");
+                        }
+                }
             }
             finally
             {

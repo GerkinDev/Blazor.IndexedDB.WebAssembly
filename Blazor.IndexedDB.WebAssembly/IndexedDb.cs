@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using TG.Blazor.IndexedDB;
 
@@ -356,6 +357,8 @@ namespace Blazor.IndexedDB.WebAssembly
             await this.connector.DeleteRecord<object>(storeName, pkValue);
         }
 
+        private readonly SemaphoreSlim _addRowSemaphore = new SemaphoreSlim(1, 1);
+
         /// <summary>
         /// Adds a row to the store
         /// </summary>
@@ -370,6 +373,7 @@ namespace Blazor.IndexedDB.WebAssembly
             IndexedDBNotificationArgs? notification = null;
             void ActionCompletedCb(object source, IndexedDBNotificationArgs args) => notification = args;
 
+            await _addRowSemaphore.WaitAsync();
             try
             {
                 this.connector.ActionCompleted += ActionCompletedCb;
@@ -390,6 +394,7 @@ namespace Blazor.IndexedDB.WebAssembly
             {
                 // Unbind notification interceptor
                 this.connector.ActionCompleted -= ActionCompletedCb;
+                _addRowSemaphore.Release();
             }
 
             // TODO: OLD GENERIC IMPLEMENTATION / REMOVE

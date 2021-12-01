@@ -35,5 +35,10 @@ namespace Blazor.IndexedDB.WebAssembly
         /// <param name="name">IndexedDb version</param>
         /// <returns></returns>
         Task<T> Create<T>(string name, int version) where T : IndexedDb;
+
+
+        Task Delete<T>() where T : IndexedDb;
+        Task Delete<T>(string name) where T : IndexedDb;
+        Task Delete(string name);
     }
 }
